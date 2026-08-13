@@ -1,0 +1,29 @@
+# Backend
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/.env
+backend/dev.db
+backend/.venv/
+backend/uvicorn_out.log
+backend/uvicorn_err.log
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+
+# Migration
+migration/*.db
+migration/backup*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Stray Vite cache (created if the dev server is ever run from the repo root)
+/.vite/
+
+# Claude Code session-local files (not project config)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
