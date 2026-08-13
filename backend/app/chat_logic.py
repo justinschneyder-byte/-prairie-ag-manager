@@ -131,7 +131,6 @@ def parse_message(db: Session, farm_id: int, message: str) -> dict:
     response = client.messages.create(
         model=settings.anthropic_model,
         max_tokens=1024,
-        temperature=0,
         system=system_prompt,
         messages=[{"role": "user", "content": message}],
     )
