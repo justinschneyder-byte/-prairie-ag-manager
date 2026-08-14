@@ -48,6 +48,7 @@ textarea {
   background: var(--color-primary);
   color: #2b2013;
   padding: 0.9rem 1rem;
+  padding-top: calc(0.9rem + env(safe-area-inset-top));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -70,7 +71,7 @@ textarea {
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   position: sticky;
-  top: 56px;
+  top: calc(56px + env(safe-area-inset-top));
   z-index: 19;
   -webkit-overflow-scrolling: touch;
 }
@@ -161,6 +162,50 @@ table.record-table {
 
 .table-scroll {
   overflow-x: auto;
+}
+
+.row-actions {
+  white-space: nowrap;
+}
+
+.record-form-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 400;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
 }
 
 .icon-btn {
@@ -314,10 +359,19 @@ table.record-table {
 
 @media (max-width: 600px) {
   .tab-bar {
-    top: 52px;
+    top: calc(52px + env(safe-area-inset-top));
   }
   .record-table th,
   .record-table td {
     padding: 0.45rem 0.3rem;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-actions {
+    flex-direction: column;
+  }
+  .form-actions .btn {
+    width: 100%;
   }
 }

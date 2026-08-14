@@ -95,6 +95,7 @@ export default function ResourceTable({ resource, columns, params, addLabel = "A
   function cancelEdit() {
     setEditingId(null);
     setFormValues({});
+    setError("");
   }
 
   function updateField(key, value) {
@@ -153,60 +154,28 @@ export default function ResourceTable({ resource, columns, params, addLabel = "A
     }
   }
 
+  const visibleRows = rows.filter((row) => row.id !== editingId);
+
   return (
     <div>
-      {error && <p className="error-text">{error}</p>}
-      <div className="table-scroll">
-        <table className="record-table">
-          <thead>
-            <tr>
-              {columns.map((c) => (
-                <th key={c.key}>{c.label}</th>
-              ))}
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {editingId === "new" && (
+      {rows.length > 0 && (
+        <div className="table-scroll">
+          <table className="record-table">
+            <thead>
               <tr>
                 {columns.map((c) => (
-                  <td key={c.key}>
-                    <FieldInput col={c} value={formValues[c.key]} onChange={(v) => updateField(c.key, v)} />
-                  </td>
+                  <th key={c.key}>{c.label}</th>
                 ))}
-                <td>
-                  <button className="icon-btn" onClick={handleSave} disabled={saving} title="Save">
-                    ✅
-                  </button>
-                  <button className="icon-btn" onClick={cancelEdit} title="Cancel">
-                    ✕
-                  </button>
-                </td>
+                <th></th>
               </tr>
-            )}
-            {rows.map((row) =>
-              editingId === row.id ? (
-                <tr key={row.id}>
-                  {columns.map((c) => (
-                    <td key={c.key}>
-                      <FieldInput col={c} value={formValues[c.key]} onChange={(v) => updateField(c.key, v)} />
-                    </td>
-                  ))}
-                  <td>
-                    <button className="icon-btn" onClick={handleSave} disabled={saving} title="Save">
-                      ✅
-                    </button>
-                    <button className="icon-btn" onClick={cancelEdit} title="Cancel">
-                      ✕
-                    </button>
-                  </td>
-                </tr>
-              ) : (
+            </thead>
+            <tbody>
+              {visibleRows.map((row) => (
                 <tr key={row.id}>
                   {columns.map((c) => (
                     <td key={c.key}>{formatDisplay(c, row)}</td>
                   ))}
-                  <td>
+                  <td className="row-actions">
                     <button className="icon-btn" onClick={() => startEdit(row)} title="Edit">
                       ✏️
                     </button>
@@ -215,16 +184,43 @@ export default function ResourceTable({ resource, columns, params, addLabel = "A
                     </button>
                   </td>
                 </tr>
-              )
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       {!loading && rows.length === 0 && editingId !== "new" && <p className="empty-state">{emptyText}</p>}
+
+      {editingId !== null && (
+        <div className="record-form-card">
+          <div className="form-grid">
+            {columns.map((c) => (
+              <label key={c.key}>
+                {c.label}
+                {c.required && <span aria-hidden="true"> *</span>}
+                <FieldInput col={c} value={formValues[c.key]} onChange={(v) => updateField(c.key, v)} />
+              </label>
+            ))}
+          </div>
+          {error && <p className="error-text">{error}</p>}
+          <div className="form-actions">
+            <button className="btn" onClick={handleSave} disabled={saving}>
+              {saving ? "Saving…" : "Save"}
+            </button>
+            <button className="btn secondary" onClick={cancelEdit} disabled={saving}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {editingId === null && (
-        <button className="btn secondary" onClick={startAdd} style={{ marginTop: "0.75rem" }}>
-          + {addLabel}
-        </button>
+        <>
+          {error && <p className="error-text">{error}</p>}
+          <button className="btn secondary" onClick={startAdd} style={{ marginTop: "0.75rem" }}>
+            + {addLabel}
+          </button>
+        </>
       )}
     </div>
   );
