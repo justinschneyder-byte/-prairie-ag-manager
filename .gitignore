@@ -17,6 +17,9 @@ frontend/.env.local
 migration/*.db
 migration/backup*.json
 
+# Ops — local backup dumps contain real farm data, never commit them
+ops/backups/
+
 # OS
 .DS_Store
 Thumbs.db
