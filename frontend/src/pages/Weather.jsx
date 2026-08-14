@@ -9,16 +9,6 @@ const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-const SUB_TABS = [
-  { key: "log", label: "Rainfall Log" },
-  { key: "chart", label: "Monthly Chart" },
-  { key: "compare", label: "Year Comparison" },
-  { key: "normals", label: "Climate Normals" },
-  { key: "frost", label: "Frost Events" },
-  { key: "hail", label: "Hail Events" },
-  { key: "regional", label: "Magrath History" },
-];
-
 const rainColumns = (year) => [
   { key: "year", label: "Year", type: "number", required: true, default: year },
   { key: "date", label: "Date", type: "date" },
@@ -267,53 +257,53 @@ function RegionalHistory({ year }) {
   );
 }
 
-function RegionalWeather({ year }) {
-  return (
-    <div>
-      <p className="empty-state" style={{ fontStyle: "normal", marginTop: 0 }}>
-        Regional weather for the Magrath, AB area, sourced from Open-Meteo — separate from your own logged
-        rainfall in the Rainfall Log tab.
-      </p>
-      <h3 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>Forecast (next 10 days)</h3>
-      <RegionalForecast />
-      <h3 style={{ fontSize: "0.95rem", margin: "1rem 0 0.5rem" }}>{year} Regional History</h3>
-      <RegionalHistory year={year} />
-    </div>
-  );
-}
+const ANALYSIS_TABS = [
+  { key: "chart", label: "Monthly Chart" },
+  { key: "compare", label: "Year Comparison" },
+  { key: "normals", label: "Climate Normals" },
+];
 
 export default function Weather() {
-  const [subTab, setSubTab] = useState("log");
+  const [regionalYear, setRegionalYear] = useState(currentYear());
   const [year, setYear] = useState(currentYear());
+  const [analysisTab, setAnalysisTab] = useState("chart");
 
   return (
-    <div className="card">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
-        <h2>Weather &amp; Rain</h2>
-        {subTab !== "normals" && subTab !== "compare" && <YearSelect value={year} onChange={setYear} />}
-      </div>
-      <div className="sub-tab-bar">
-        {SUB_TABS.map((t) => (
-          <button key={t.key} className={subTab === t.key ? "active" : ""} onClick={() => setSubTab(t.key)}>
-            {t.label}
-          </button>
-        ))}
+    <div>
+      <div className="card">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+          <h2>Regional Weather — Magrath, AB</h2>
+          <YearSelect value={regionalYear} onChange={setRegionalYear} />
+        </div>
+        <p className="empty-state" style={{ fontStyle: "normal", marginTop: 0 }}>
+          Sourced from Open-Meteo — separate from your own logged rainfall below.
+        </p>
+        <h3 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>Forecast (next 10 days)</h3>
+        <RegionalForecast />
+        <h3 style={{ fontSize: "0.95rem", margin: "1rem 0 0.5rem" }}>{regionalYear} Regional History</h3>
+        <RegionalHistory year={regionalYear} />
       </div>
 
-      {subTab === "log" && (
+      <div className="card">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+          <h2>Farm Weather Log</h2>
+          <YearSelect value={year} onChange={setYear} />
+        </div>
+        <p className="empty-state" style={{ fontStyle: "normal", marginTop: 0 }}>
+          What actually happened on our fields — recorded by you.
+        </p>
+
+        <h3 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>Rainfall</h3>
         <ResourceTable
-          key={year}
+          key={`rain-${year}`}
           resource="weather/rain"
           columns={rainColumns(year)}
           params={{ year }}
           addLabel="Add rainfall entry"
           emptyText={`No rainfall logged for ${year}.`}
         />
-      )}
-      {subTab === "chart" && <MonthlyChart year={year} />}
-      {subTab === "compare" && <YearComparison />}
-      {subTab === "normals" && <ClimateNormalsTable />}
-      {subTab === "frost" && (
+
+        <h3 style={{ fontSize: "0.95rem", margin: "1.25rem 0 0.5rem" }}>Frost Events</h3>
         <ResourceTable
           key={`frost-${year}`}
           resource="weather/frost"
@@ -322,8 +312,8 @@ export default function Weather() {
           addLabel="Add frost event"
           emptyText={`No frost events logged for ${year}.`}
         />
-      )}
-      {subTab === "hail" && (
+
+        <h3 style={{ fontSize: "0.95rem", margin: "1.25rem 0 0.5rem" }}>Hail Events</h3>
         <ResourceTable
           key={`hail-${year}`}
           resource="weather/hail"
@@ -332,8 +322,19 @@ export default function Weather() {
           addLabel="Add hail event"
           emptyText={`No hail events logged for ${year}.`}
         />
-      )}
-      {subTab === "regional" && <RegionalWeather year={year} />}
+
+        <h3 style={{ fontSize: "0.95rem", margin: "1.25rem 0 0.5rem" }}>Analysis</h3>
+        <div className="sub-tab-bar">
+          {ANALYSIS_TABS.map((t) => (
+            <button key={t.key} className={analysisTab === t.key ? "active" : ""} onClick={() => setAnalysisTab(t.key)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        {analysisTab === "chart" && <MonthlyChart year={year} />}
+        {analysisTab === "compare" && <YearComparison />}
+        {analysisTab === "normals" && <ClimateNormalsTable />}
+      </div>
     </div>
   );
 }
