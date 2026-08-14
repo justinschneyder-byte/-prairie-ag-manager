@@ -306,6 +306,22 @@ class HailOut(HailBase, ORMBase):
     created_at: Optional[datetime] = None
 
 
+# ---------- Field history ----------
+
+
+class FieldYearHistory(BaseModel):
+    year: int
+    crops: list[CropOut] = []
+    inputs: list[InputOut] = []
+    sprays: list[SprayOut] = []
+    total_cost: Decimal = Decimal(0)
+
+
+class FieldHistory(BaseModel):
+    field: FieldOut
+    years: list[FieldYearHistory]
+
+
 # ---------- Chat ----------
 
 

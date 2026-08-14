@@ -37,6 +37,8 @@ export const api = {
   update: (resource, id, body) => request(`/${resource}/${id}`, { method: "PUT", body }),
   remove: (resource, id) => request(`/${resource}/${id}`, { method: "DELETE" }),
 
+  fieldHistory: (fieldId) => request(`/fields/${fieldId}/history`),
+
   chat: (message) => request("/chat", { method: "POST", body: { message } }),
   exportData: () => request("/export"),
   importData: (payload) => request("/import", { method: "POST", body: payload }),
