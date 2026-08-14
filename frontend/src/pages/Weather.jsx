@@ -9,6 +9,14 @@ const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
+const COMPASS_POINTS = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+
+function windDirLabel(deg) {
+  if (deg == null) return "";
+  const idx = Math.round(deg / 22.5) % 16;
+  return COMPASS_POINTS[idx];
+}
+
 const rainColumns = (year) => [
   { key: "year", label: "Year", type: "number", required: true, default: year },
   { key: "date", label: "Date", type: "date" },
@@ -173,6 +181,7 @@ function RegionalForecast() {
             <th>Low</th>
             <th>Precip</th>
             <th>Chance</th>
+            <th>Wind</th>
           </tr>
         </thead>
         <tbody>
@@ -183,6 +192,10 @@ function RegionalForecast() {
               <td>{d.temp_low != null ? `${d.temp_low}°C` : "—"}</td>
               <td>{d.precip_mm != null ? `${d.precip_mm} mm` : "—"}</td>
               <td>{d.precip_probability != null ? `${d.precip_probability}%` : "—"}</td>
+              <td>
+                {d.wind_speed_max != null ? `${d.wind_speed_max} km/h` : "—"}
+                {d.wind_direction != null ? ` ${windDirLabel(d.wind_direction)}` : ""}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -212,14 +225,28 @@ function RegionalHistory({ year }) {
   if (!history) return <p className="empty-state">Loading {year} regional data…</p>;
 
   const max = Math.max(1, ...history.months.map((m) => m.precip_mm || 0));
+  const { frost_summary: frostSummary } = history;
 
   return (
     <div>
+      {frostSummary && frostSummary.total_frost_days > 0 && (
+        <div className="reference-item" style={{ marginBottom: "0.75rem" }}>
+          <p style={{ margin: 0 }}>
+            <span className="badge">❄️ Auto-detected</span>{" "}
+            {frostSummary.total_frost_days} frost day{frostSummary.total_frost_days === 1 ? "" : "s"} in {year}
+            {frostSummary.last_spring_frost ? ` · Last spring frost: ${frostSummary.last_spring_frost}` : ""}
+            {frostSummary.first_fall_frost ? ` · First fall frost: ${frostSummary.first_fall_frost}` : ""}
+          </p>
+          <p style={{ margin: "0.25rem 0 0", fontSize: "0.8rem", color: "var(--color-text-muted)" }}>
+            From regional daily lows (≤0°C) — not your own logged Frost Events below.
+          </p>
+        </div>
+      )}
       <div style={{ display: "flex", alignItems: "flex-end", gap: "0.5rem", height: "180px", padding: "0.5rem 0" }}>
         {history.months.map((m) => (
           <div key={m.month} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem" }}>
             <div
-              title={`${MONTH_NAMES[m.month - 1]}: ${m.precip_mm ?? 0} mm`}
+              title={`${MONTH_NAMES[m.month - 1]}: ${m.precip_mm ?? 0} mm${m.frost_days ? `, ${m.frost_days} frost days` : ""}`}
               style={{
                 width: "100%",
                 height: `${Math.max(2, ((m.precip_mm || 0) / max) * 150)}px`,
@@ -228,6 +255,7 @@ function RegionalHistory({ year }) {
               }}
             />
             <span style={{ fontSize: "0.7rem", color: "var(--color-text-muted)" }}>{MONTH_NAMES[m.month - 1]}</span>
+            {m.frost_days > 0 && <span style={{ fontSize: "0.65rem" }}>❄️{m.frost_days}</span>}
           </div>
         ))}
       </div>
@@ -239,6 +267,8 @@ function RegionalHistory({ year }) {
               <th>Precip (mm)</th>
               <th>Avg High (°C)</th>
               <th>Avg Low (°C)</th>
+              <th>Avg Wind (km/h)</th>
+              <th>Frost Days</th>
             </tr>
           </thead>
           <tbody>
@@ -248,6 +278,8 @@ function RegionalHistory({ year }) {
                 <td>{m.precip_mm ?? "—"}</td>
                 <td>{m.temp_high_avg ?? "—"}</td>
                 <td>{m.temp_low_avg ?? "—"}</td>
+                <td>{m.wind_speed_avg ?? "—"}</td>
+                <td>{m.frost_days || "—"}</td>
               </tr>
             ))}
           </tbody>
