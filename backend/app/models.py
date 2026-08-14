@@ -186,6 +186,18 @@ class HailEvent(Base):
     __table_args__ = (Index("ix_hail_events_farm_year", "farm_id", "year"),)
 
 
+class WeatherCache(Base):
+    """Cache for external Open-Meteo API responses — regional history/forecast,
+    not the farm's own logged rain_events. Farm-agnostic (fixed Magrath coords)."""
+
+    __tablename__ = "weather_cache"
+
+    id = Column(Integer, primary_key=True)
+    cache_key = Column(Text, unique=True, nullable=False, index=True)
+    payload = Column(Text, nullable=False)
+    fetched_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 class ChatLog(Base):
     __tablename__ = "chat_log"
 

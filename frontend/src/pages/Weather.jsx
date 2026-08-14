@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { api } from "../api.js";
 import ResourceTable from "../components/ResourceTable.jsx";
 import YearSelect from "../components/YearSelect.jsx";
 import { useResourceList, currentYear } from "../hooks.js";
@@ -15,6 +16,7 @@ const SUB_TABS = [
   { key: "normals", label: "Climate Normals" },
   { key: "frost", label: "Frost Events" },
   { key: "hail", label: "Hail Events" },
+  { key: "regional", label: "Magrath History" },
 ];
 
 const rainColumns = (year) => [
@@ -153,6 +155,133 @@ function ClimateNormalsTable() {
   );
 }
 
+function RegionalForecast() {
+  const [forecast, setForecast] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .regionalForecast()
+      .then((data) => !cancelled && setForecast(data))
+      .catch((err) => !cancelled && setError(err.message));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (error) return <p className="error-text">Couldn't load the forecast: {error}</p>;
+  if (!forecast) return <p className="empty-state">Loading forecast…</p>;
+
+  return (
+    <div className="table-scroll">
+      <table className="record-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>High</th>
+            <th>Low</th>
+            <th>Precip</th>
+            <th>Chance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {forecast.days.map((d) => (
+            <tr key={d.date}>
+              <td>{d.date}</td>
+              <td>{d.temp_high != null ? `${d.temp_high}°C` : "—"}</td>
+              <td>{d.temp_low != null ? `${d.temp_low}°C` : "—"}</td>
+              <td>{d.precip_mm != null ? `${d.precip_mm} mm` : "—"}</td>
+              <td>{d.precip_probability != null ? `${d.precip_probability}%` : "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function RegionalHistory({ year }) {
+  const [history, setHistory] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setHistory(null);
+    setError("");
+    api
+      .regionalHistory(year)
+      .then((data) => !cancelled && setHistory(data))
+      .catch((err) => !cancelled && setError(err.message));
+    return () => {
+      cancelled = true;
+    };
+  }, [year]);
+
+  if (error) return <p className="error-text">Couldn't load {year} regional data: {error}</p>;
+  if (!history) return <p className="empty-state">Loading {year} regional data…</p>;
+
+  const max = Math.max(1, ...history.months.map((m) => m.precip_mm || 0));
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: "0.5rem", height: "180px", padding: "0.5rem 0" }}>
+        {history.months.map((m) => (
+          <div key={m.month} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem" }}>
+            <div
+              title={`${MONTH_NAMES[m.month - 1]}: ${m.precip_mm ?? 0} mm`}
+              style={{
+                width: "100%",
+                height: `${Math.max(2, ((m.precip_mm || 0) / max) * 150)}px`,
+                background: "var(--color-primary)",
+                borderRadius: "4px 4px 0 0",
+              }}
+            />
+            <span style={{ fontSize: "0.7rem", color: "var(--color-text-muted)" }}>{MONTH_NAMES[m.month - 1]}</span>
+          </div>
+        ))}
+      </div>
+      <div className="table-scroll">
+        <table className="record-table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Precip (mm)</th>
+              <th>Avg High (°C)</th>
+              <th>Avg Low (°C)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {history.months.map((m) => (
+              <tr key={m.month}>
+                <td>{MONTH_NAMES[m.month - 1]}</td>
+                <td>{m.precip_mm ?? "—"}</td>
+                <td>{m.temp_high_avg ?? "—"}</td>
+                <td>{m.temp_low_avg ?? "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function RegionalWeather({ year }) {
+  return (
+    <div>
+      <p className="empty-state" style={{ fontStyle: "normal", marginTop: 0 }}>
+        Regional weather for the Magrath, AB area, sourced from Open-Meteo — separate from your own logged
+        rainfall in the Rainfall Log tab.
+      </p>
+      <h3 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>Forecast (next 10 days)</h3>
+      <RegionalForecast />
+      <h3 style={{ fontSize: "0.95rem", margin: "1rem 0 0.5rem" }}>{year} Regional History</h3>
+      <RegionalHistory year={year} />
+    </div>
+  );
+}
+
 export default function Weather() {
   const [subTab, setSubTab] = useState("log");
   const [year, setYear] = useState(currentYear());
@@ -204,6 +333,7 @@ export default function Weather() {
           emptyText={`No hail events logged for ${year}.`}
         />
       )}
+      {subTab === "regional" && <RegionalWeather year={year} />}
     </div>
   );
 }

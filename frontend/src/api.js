@@ -38,6 +38,8 @@ export const api = {
   remove: (resource, id) => request(`/${resource}/${id}`, { method: "DELETE" }),
 
   fieldHistory: (fieldId) => request(`/fields/${fieldId}/history`),
+  regionalHistory: (year) => request("/weather/regional-history", { params: { year } }),
+  regionalForecast: () => request("/weather/regional-forecast"),
 
   chat: (message) => request("/chat", { method: "POST", body: { message } }),
   exportData: () => request("/export"),
