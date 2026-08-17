@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 const BACKEND_PATHS = [
   '/auth', '/fields', '/machines', '/crops', '/inputs', '/sprays',
-  '/maintenance', '/weather', '/chat', '/export', '/import', '/health',
+  '/maintenance', '/weather', '/chat', '/export', '/import', '/health', '/blue-book',
 ]
 
 // https://vite.dev/config/

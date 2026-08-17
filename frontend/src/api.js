@@ -1,5 +1,18 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
+async function throwForResponse(res) {
+  let detail = res.statusText;
+  try {
+    const data = await res.json();
+    detail = data.detail || JSON.stringify(data);
+  } catch {
+    // ignore, keep statusText
+  }
+  const err = new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+  err.status = res.status;
+  throw err;
+}
+
 async function request(path, { method = "GET", body, params } = {}) {
   let url = `${API_URL}${path}`;
   if (params) {
@@ -16,18 +29,16 @@ async function request(path, { method = "GET", body, params } = {}) {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  if (!res.ok) {
-    let detail = res.statusText;
-    try {
-      const data = await res.json();
-      detail = data.detail || JSON.stringify(data);
-    } catch {
-      // ignore, keep statusText
-    }
-    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
-  }
-
+  if (!res.ok) await throwForResponse(res);
   if (res.status === 204) return null;
+  return res.json();
+}
+
+async function uploadFile(path, file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`${API_URL}${path}`, { method: "POST", body: formData });
+  if (!res.ok) await throwForResponse(res);
   return res.json();
 }
 
@@ -44,4 +55,9 @@ export const api = {
   chat: (message) => request("/chat", { method: "POST", body: { message } }),
   exportData: () => request("/export"),
   importData: (payload) => request("/import", { method: "POST", body: payload }),
+
+  blueBookMeta: () => request("/blue-book"),
+  uploadBlueBook: (file) => uploadFile("/blue-book", file),
+  deleteBlueBook: () => request("/blue-book", { method: "DELETE" }),
+  blueBookFileUrl: () => `${API_URL}/blue-book/file`,
 };

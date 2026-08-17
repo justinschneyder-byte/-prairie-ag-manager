@@ -198,6 +198,23 @@ class WeatherCache(Base):
     fetched_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class BlueBookDocument(Base):
+    """Metadata for the farm's own uploaded copy of the Blue Book (Alberta Crop
+    Protection Guide) PDF. The file itself lives on disk (blue_book_storage_dir),
+    not in the database — this table just tracks what's there. One per farm;
+    a new upload replaces the previous file and row. We never extract or store
+    the document's actual content — it's copyrighted, this is just storage."""
+
+    __tablename__ = "blue_book_documents"
+
+    id = Column(Integer, primary_key=True)
+    farm_id = Column(Integer, ForeignKey("farms.id"), unique=True, index=True)
+    original_filename = Column(Text, nullable=False)
+    stored_path = Column(Text, nullable=False)
+    size_bytes = Column(Integer, nullable=False)
+    uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 class ChatLog(Base):
     __tablename__ = "chat_log"
 

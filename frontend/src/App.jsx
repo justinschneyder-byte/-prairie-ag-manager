@@ -35,7 +35,7 @@ export default function App() {
         ))}
       </nav>
       <main className="tab-content">
-        <ActiveComponent />
+        <ActiveComponent onNavigate={setTab} />
       </main>
     </div>
   );

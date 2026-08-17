@@ -8,7 +8,7 @@ const SUB_TABS = [
   { key: "tankmix", label: "Tank Mix Guide" },
 ];
 
-export default function WeedsPests() {
+export default function WeedsPests({ onNavigate }) {
   const [subTab, setSubTab] = useState("weeds");
 
   return (
@@ -59,6 +59,15 @@ export default function WeedsPests() {
 
       {subTab === "tankmix" && (
         <div className="reference-list">
+          <div className="reference-item">
+            <p style={{ margin: 0 }}>
+              This is a quick-glance summary only. For the full, authoritative product list, always check your own
+              uploaded copy of the Blue Book (Alberta's Crop Protection Guide).
+            </p>
+            <button className="btn secondary" style={{ marginTop: "0.5rem" }} onClick={() => onNavigate?.("inputs")}>
+              Open Blue Book (Inputs & Spray tab)
+            </button>
+          </div>
           {TANK_MIX_GROUPS.map((g) => (
             <div className="reference-item" key={g.category}>
               <h3>{g.category}</h3>

@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from . import models
 from .config import get_settings
 from .database import Base, SessionLocal, engine
-from .routers import chat, crops, data, fields, inputs, machines, maintenance, sprays, weather
+from .routers import blue_book, chat, crops, data, fields, inputs, machines, maintenance, sprays, weather
 
 settings = get_settings()
 
@@ -46,3 +46,4 @@ for w_router in weather.routers:
     app.include_router(w_router)
 app.include_router(chat.router)
 app.include_router(data.router)
+app.include_router(blue_book.router)
